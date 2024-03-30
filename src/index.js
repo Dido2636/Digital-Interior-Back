@@ -32,7 +32,7 @@ app.get("/", (req, res) => res.json("YOU ARE IN INTERIOR BACKEND"));
 app.use("/users", userRouter);
 app.use("/decorators", decoratorRouter);
 
-// app.use(,express.static("ima"));
+app.use(express.static(process.cwd() + "/uploads"));
 
 app.use("/media", mediaRouter);
 app.use("/comment", commentRouter);
