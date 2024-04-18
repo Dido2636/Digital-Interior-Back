@@ -6,8 +6,8 @@ const userSchema = new Schema({
   firstname: String,
   email: { type: String, required: true},
   password: { type: String, min: [6, "Must be at least 6 characters"] },
-  role: { type: String, default: "User" },
-  comment: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
+  author: { type: Schema.Types.ObjectId, ref: "User" },
+  commentaire: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
 });
 
 userSchema.methods.encryptPassword = async (password) => {

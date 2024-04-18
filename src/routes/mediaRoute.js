@@ -1,31 +1,36 @@
 import { Router } from "express";
+import { auth } from "../middlewares/auth";
 import {
   getAllMedia,
   getMediaById,
   createMedia,
   addCommentinMedia,
   updateMedia,
-  deleteCommentinMedia,
   deleteMedia,
+  deleteCommentInMedia,
 } from "../controllers/mediaController";
-import { uploadMedia } from "../middlewares/multer"
+import { uploadMedia } from "../middlewares/multer";
 
 const mediaRouter = Router();
-
 
 mediaRouter.get("/allmedia", getAllMedia);
 mediaRouter.get("/:id", getMediaById);
 
-mediaRouter.post("/create-media",uploadMedia.single("mediaType"), createMedia);
-mediaRouter.post("/:mediaId/add-comment", addCommentinMedia);
 
-mediaRouter.put("/update-media/:id", updateMedia);
-mediaRouter.put("/:mediaId/delete-comment/:commentId", deleteCommentinMedia);
+mediaRouter.post(
+  "/create-media",
+  uploadMedia.single("imageMedia"),
+ auth, createMedia
+);
 
-mediaRouter.delete("/delete/:mediaId", deleteMedia);
+mediaRouter.post("/:mediaId/comment", addCommentinMedia);
+
+mediaRouter.put("/update-media/:id",auth, updateMedia);
+
+mediaRouter.delete("/:media/delete-comment/:comment", deleteCommentInMedia);
+
+mediaRouter.delete("/delete/:id", deleteMedia);
 
 export default mediaRouter;
 
-//Le decorateur peut utiliser ses routes que si il est connecter,est ce que je dois mettre auth
 
-// mediaRouter.post("/create-media",uploadMedia.array("mediaType"), createMedia);

@@ -6,9 +6,9 @@ const decoratorSchema = new Schema({
   firstname: String,
   email: { type: String, required: true },
   password: { type: String, required: true },
-  role: { type: String, default: "Decorator" },
-  isadmin: { type: Boolean, default: true },
-  comment: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
+  author: { type: Schema.Types.ObjectId, ref: "User" },
+  isAdmin: { type: Boolean, default: true },
+  commentaire: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
 });
 
 decoratorSchema.methods.encryptPassword = async (password) => {

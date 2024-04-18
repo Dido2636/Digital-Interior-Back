@@ -5,6 +5,7 @@ import userRouter from "./routes/userRoute";
 import decoratorRouter from "./routes/decoratorRoute";
 import mediaRouter from "./routes/mediaRoute";
 import commentRouter from "./routes/commentRouter";
+import { auth } from "./middlewares/auth";
 
 const app = express();
 const PORT = process.env.PORT;

@@ -15,7 +15,8 @@ import "dotenv/config";
   try {
     // Vérifier la validité du token
     const decoded = jwt.verify(token, process.env.JWT_SECRET); // Remplacez par votre clé secrète réelle
-    req.user = decoded.user; // Ajouter les données utilisateur décryptées à l'objet req
+    console.log(decoded);
+    req.user = decoded.userData; // Ajouter les données utilisateur décryptées à l'objet req
     console.log(req.user)
     next(); // Passer au middleware suivant
   } catch (error) {
@@ -26,8 +27,15 @@ import "dotenv/config";
 
 
 const generateAuthToken = (user) => {
+  const userData = {
+    id: user.id,
+    email: user.email,
+    firstname: user.firstname,
+    isAdmin: user.isAdmin,
+  }
+
   const token = jwt.sign(
-  {user}, process.env.JWT_SECRET, { expiresIn: "7d" }
+  {userData}, process.env.JWT_SECRET, { expiresIn: "7d" }
   );
   return token;
 };

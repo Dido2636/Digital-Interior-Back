@@ -5,6 +5,15 @@ import "dotenv/config";
 export const register = async (req, res) => {
   const { name, firstname, email, password } = req.body;
   try {
+    // Vérifier si un utilisateur avec la même adresse e-mail existe déjà
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json({
+        message: "Un utilisateur avec cette adresse e-mail existe déjà.",
+      });
+    }
+
     const newUser = new User({ name, firstname, email, password });
     newUser.password = await newUser.encryptPassword(password);
     await newUser.save();

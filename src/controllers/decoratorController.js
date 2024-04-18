@@ -14,6 +14,13 @@ export const getAlldecorator = async (req, res) => {
 export const register = async (req, res) => {
   const { company, firstname, email, password } = req.body;
   try {
+  // Vérifier si un utilisateur avec la même adresse e-mail existe déjà
+  const existingDecorator = await Decorator.findOne({ email });
+
+  if (existingDecorator) {
+  return res.status(400).json({ message: "Un decorator avec cette adresse e-mail existe déjà.",});
+       }
+
     const newDecorator = new Decorator({ company, firstname, email, password });
     newDecorator.password = await newDecorator.encryptPassword(
       req.body.password

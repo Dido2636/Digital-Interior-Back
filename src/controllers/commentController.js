@@ -14,10 +14,11 @@ export const getAllComment = async (req, res) => {
     }
   };
 
+
+
   export const getCommentById = async (req, res) => {
     try {
-      const commentId = req.params.id;
-      const comment = await Comment.findById(commentId);
+      const comment = await Comment.findById({_id:req.params.id});
   
       if (!comment) {
         return res.status(404).json("comment not found");
@@ -28,4 +29,6 @@ export const getAllComment = async (req, res) => {
       res.status(500).json({ error: error.message });
     }
   };
+
+  
   
