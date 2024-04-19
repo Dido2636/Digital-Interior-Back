@@ -33,7 +33,7 @@ export const getMediaById = async (req, res) => {
 };
 
 export const createMedia = async (req, res) => {
-  const isAdmin  = req.user.isAdmin;
+  const isAdmin = req.user.isAdmin;
   console.log(isAdmin);
   try {
     if (isAdmin) {
@@ -65,36 +65,8 @@ export const createMedia = async (req, res) => {
   }
 };
 
-// export const createMedia = async (req, res) => {
-//   try {
-//     const { title, description, sousDescription, viewUrl } = req.body;
-//     if (!req.files.imageMedia) {
-//       return res.status(400).json({ message: "No image uploaded" });
-//     }
-
-//     const imageMedia = req.files.imageMedia;
-//     const pdfMedia = req.files.pdfMedia;
-
-//     const media = new Media({
-//       title,
-//       description,
-//       sousDescription,
-//       imageMedia,
-//       pdfMedia,
-//       viewUrl,
-//     });
-//     console.log(media);
-//     await media.save();
-//     console.log(media);
-//     res.status(200).json({ media, message: "Media created succesfully" });
-//   } catch (error) {
-//     console.error("Error Create Media", error);
-//     res.status(500).json(error.message);
-//   }
-// };
-
 export const updateMedia = async (req, res) => {
-  const isAdmin  = req.user.isAdmin;
+  const isAdmin = req.user.isAdmin;
   console.log(isAdmin);
   try {
     if (isAdmin) {
@@ -112,6 +84,90 @@ export const updateMedia = async (req, res) => {
     }
   } catch (error) {
     res.status(500).json(error.message);
+  }
+};
+
+export const addCommentinMedia = async (req, res) => {
+  try {
+    const media = await Media.findById({ _id: req.params.mediaId });
+    if (!media) {
+      return res.status(404).send("Error media not found");
+    }
+
+    const { commentaire, createAt } = req.body;
+    const author = req.user.firstname;
+
+    const comment = new Comment({
+      commentaire: commentaire,
+      author: author,
+      createAt: createAt,
+    });
+
+    console.log(comment);
+
+    await comment.save();
+    media.commentaire.push(comment);
+    await media.save();
+
+    const updatedMedia = await Media.findById(media).populate("commentaire");
+
+    res.status(200).json(updatedMedia);
+  } catch (error) {
+    res.status(500).json(error.message);
+  }
+};
+
+export const deleteMedia = async (req, res) => {
+  const isAdmin = req.user.isAdmin;
+  console.log(isAdmin);
+  try {
+    if (isAdmin) {
+      const mediaId = req.params.id;
+      const media = await Media.findOne({ _id: mediaId });
+      if (!media) {
+        return res
+          .status(404)
+          .json({ error: "Media not found or not deleted" });
+      }
+
+      if (media.imageMedia) {
+        const imagePath = path.join(process.cwd(), "uploads", media.imageMedia);
+        if (fs.existsSync(imagePath)) {
+          fs.unlinkSync(imagePath);
+        }
+      }
+
+      await Media.findOneAndDelete({ _id: mediaId });
+
+      res.status(200).json({ message: "Media Deleted" });
+    } else {
+      res.status(401).send("Non autorisé");
+    }
+  } catch (error) {
+    console.error("Error deleting media:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const deleteCommentInMedia = async (req, res) => {
+  try {
+    const media = await Media.findById(req.params.media);
+    const comment = await Comment.findById(req.params.comment);
+
+    if (!media) {
+      return res.status(404).json({ error: "Media not found" });
+    }
+    if (!comment) {
+      return res.status(404).json({ error: "Comment not found" });
+    }
+
+    media.commentaire.pull(comment._id);
+    await media.save();
+
+    res.status(200).json({ media, message: "Comment Deleted" });
+  } catch (error) {
+    console.error("Error deleting comment", error);
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -143,55 +199,6 @@ export const updateMedia = async (req, res) => {
 //   }
 // };
 
-export const addCommentinMedia = async (req, res) => {
-  try {
-    const media = await Media.findById({ _id: req.params.mediaId });
-    const { commentaire, author } = req.body;
-    if (!media) {
-      return res.status(404).send("Error media not found");
-    }
-    const comment = new Comment({
-      commentaire: commentaire,
-      author: author,
-    });
-    console.log(comment);
-
-    await comment.save();
-    media.commentaire.push(comment);
-    await media.save();
-
-    const updatedMedia = await Media.findById(media).populate("commentaire");
-
-    res.status(200).json(updatedMedia);
-  } catch (error) {
-    res.status(500).json(error.message);
-  }
-};
-
-export const deleteMedia = async (req, res) => {
-  try {
-    const mediaId = req.params.id;
-    const media = await Media.findOne({ _id: mediaId });
-    if (!media) {
-      return res.status(404).json({ error: "Media not found or not deleted" });
-    }
-
-    if (media.imageMedia) {
-      const imagePath = path.join(process.cwd(), "uploads", media.imageMedia);
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
-      }
-    }
-
-    await Media.findOneAndDelete({ _id: mediaId });
-
-    res.status(200).json({ message: "Media Deleted" });
-  } catch (error) {
-    console.error("Error deleting media:", error);
-    res.status(500).json({ error: error.message });
-  }
-};
-
 // export const deleteMedia = async (req, res) => {
 //   try {
 //     const media = await Media.findOneAndDelete({ _id: req.params.id });
@@ -222,50 +229,3 @@ export const deleteMedia = async (req, res) => {
 //     res.status(500).json(error.message);
 //   }
 // };
-
-// export const deleteCommentInMedia = async (req, res) => {
-//   try {
-//     const media = await Media.findById({ _id: req.params.mediaId });
-//     const comment = await Comment.findById({_id:req.params.id});
-
-//     if (!media) {
-//       return res.status(404).json({ error: "Media not found" });
-//     }
-//     if (!comment) {
-//       return res.status(404).json({ error: "Comment not found" });
-//     }
-
-//     media.commentaire.pull(comment._id);
-//     await media.save();
-
-//     res.status(200).json({ media, message: "Comment Deleted" });
-//   } catch (error) {
-//     console.error("Error deleting comment", error);
-//     res.status(500).json({ error: error.message });
-//   }
-// };
-
-export const deleteCommentInMedia = async (req, res) => {
-  const commentId = req.params.commentId;
-  try {
-    const media = await Media.findById({ _id: req.params.mediaId });
-    const comment = await Comment.findById({ _id: commentId }); // Utilisez commentId ici
-
-    if (!media) {
-      return res.status(404).json({ error: "Media not found" });
-    }
-    if (!comment) {
-      return res.status(404).json({ error: "Comment not found" });
-    }
-
-    media.commentaire.pull(comment._id);
-    await media.save();
-
-    res.status(200).json({ media, message: "Comment Deleted" });
-
-    // Vérifiez si media et comment existent, et effectuez la suppression comme avant...
-  } catch (error) {
-    console.error("Error deleting comment", error);
-    res.status(500).json({ error: error.message });
-  }
-};

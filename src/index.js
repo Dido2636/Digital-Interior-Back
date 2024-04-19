@@ -5,7 +5,9 @@ import userRouter from "./routes/userRoute";
 import decoratorRouter from "./routes/decoratorRoute";
 import mediaRouter from "./routes/mediaRoute";
 import commentRouter from "./routes/commentRouter";
-import { auth } from "./middlewares/auth";
+
+
+
 
 const app = express();
 const PORT = process.env.PORT;
@@ -32,6 +34,8 @@ app.use((req, res, next) => {
 app.get("/", (req, res) => res.json("YOU ARE IN INTERIOR BACKEND"));
 app.use("/users", userRouter);
 app.use("/decorators", decoratorRouter);
+
+
 
 app.use(express.static(process.cwd() + "/uploads"));
 

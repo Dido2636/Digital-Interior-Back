@@ -23,13 +23,13 @@ mediaRouter.post(
  auth, createMedia
 );
 
-mediaRouter.post("/:mediaId/comment", addCommentinMedia);
+mediaRouter.post("/:mediaId/comment",auth, addCommentinMedia);
 
 mediaRouter.put("/update-media/:id",auth, updateMedia);
 
 mediaRouter.delete("/:media/delete-comment/:comment", deleteCommentInMedia);
 
-mediaRouter.delete("/delete/:id", deleteMedia);
+mediaRouter.delete("/delete/:id", auth,deleteMedia);
 
 export default mediaRouter;
 
