@@ -2,6 +2,7 @@ import Comment from "../models/commentModel";
 import Media from "../models/mediaModel";
 import path from "path";
 import fs from "fs";
+import Project from "../models/projectModel";
 
 export const getAllMedia = async (req, res) => {
   try {
@@ -37,9 +38,10 @@ export const createMedia = async (req, res) => {
   console.log(isAdmin);
   try {
     if (isAdmin) {
+      const project = await Project.findById({ _id: req.params.id });
       const { title, description, sousDescription, viewUrl } = req.body;
-      if (!req.file) {
-        return res.status(400).json({ message: "No file uploaded" });
+      if (!title || !req.file) {
+        return res.status(400).json({ message: "No file and title uploaded" });
       }
       const imageMedia = req.file.filename;
       const createAt = new Date();
@@ -54,8 +56,12 @@ export const createMedia = async (req, res) => {
       });
       console.log(media);
       await media.save();
+      project.media.push(media)
+      await project.save();
       console.log(media);
-      res.status(200).json({ media, message: "Media created succesfully" });
+      const updatedProject = await Project.findById(project);
+      
+      res.status(200).json({ updatedProject, message: "Media created succesfully" });
     } else {
       res.status(401).send("Non autorisé");
     }
@@ -163,6 +169,8 @@ export const deleteCommentInMedia = async (req, res) => {
 
     media.commentaire.pull(comment._id);
     await media.save();
+
+    await Comment.findByIdAndDelete(comment._id);
 
     res.status(200).json({ media, message: "Comment Deleted" });
   } catch (error) {

@@ -1,4 +1,3 @@
-
 import { Schema, mongoose } from "mongoose";
 
 const mediaSchema = new Schema({

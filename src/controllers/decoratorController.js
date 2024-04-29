@@ -49,7 +49,7 @@ export const login = async (req, res) => {
     const validPassword = await decorator.validPassword(
       password,
       decorator.password
-    );
+      );
     if (!validPassword) {
       const error = new Error("Invalid password");
       throw error;

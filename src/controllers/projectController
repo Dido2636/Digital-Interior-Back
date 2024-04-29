@@ -1,0 +1,238 @@
+import Media from "../models/mediaModel";
+import path from "path";
+import fs from "fs";
+import Project from "../models/projectModel";
+
+export const getAllProject = async (req, res) => {
+  try {
+    const project = await Project.find();
+    if (!project) {
+      return res.status(404).json("All project not found");
+    }
+    res.json(project);
+  } catch (error) {
+    console.error("Error fetching all media ", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getProjectById = async (req, res) => {
+  try {
+    const project = await Project.findById({ _id: req.params.id });
+
+    if (!project) {
+      return res.status(404).json("project not found");
+    }
+    res.json(project);
+  } catch (error) {
+    console.error("Error fetching media by ID", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const createProject = async (req, res) => {
+  const isAdmin = req.user.isAdmin;
+  project.owner = req.user._id
+  console.log(isAdmin);
+  try {
+    if (isAdmin ) {
+      const { title, description, invitedUsers } = req.body;
+      if (!title) {
+        return res.status(400).json({ message: "No title" });
+      }
+
+      const project = new Project({
+        title,
+        description,
+        invitedUsers: invitedUsers,
+      });
+      console.log(project);
+      await project.save();
+      console.log(project);
+      res.status(200).json({ project, message: "Project created succesfully" });
+    } else {
+      res.status(401).send("Non autorisé");
+    }
+  } catch (error) {
+    console.error("Error Create Project", error);
+    res.status(500).json(error.message);
+  }
+};
+
+export const updateProject = async (req, res) => {
+  const isAdmin = req.user.isAdmin;
+  console.log(isAdmin);
+  try {
+    if (isAdmin) {
+      const projectUpdate = await Project.findOneAndUpdate(
+        { _id: req.params.id },
+        req.body,
+        { new: true }
+      );
+      if (!projectUpdate) {
+        return res.status(404).json("Failed to update media");
+      }
+      res.json({ mediaUpdate, message: "Media Updated succesfully" });
+    } else {
+      res.status(401).send("Non autorisé");
+    }
+  } catch (error) {
+    res.status(500).json(error.message);
+  }
+};
+
+export const addCommentinProject = async (req, res) => {
+  const isAdmin = req.user.isAdmin;
+  console.log(isAdmin);
+  try {
+    if (isAdmin) {
+      const { title, description, sousDescription, viewUrl } = req.body;
+      const project = await Project.findById({ _id: req.params.mediaId });
+      if (!project) {
+        return res.status(404).send("Error project not found");
+      }
+
+      const imageMedia = req.file.filename;
+      const createAt = new Date();
+      const author = req.user.firstname;
+
+      const postMedia = new Media({
+        title,
+        description,
+        sousDescription,
+        imageMedia,
+        viewUrl,
+        createAt,
+        author,
+      });
+
+      console.log(postMedia);
+
+      await postMedia.save();
+      project.media.push(postMedia);
+      await project.save();
+
+      const updatedProject = await Project.findById(project);
+
+      res.status(200).json(updatedProject);
+    }
+  } catch (error) {
+    res.status(500).json(error.message);
+  }
+};
+
+
+export const deleteMedia = async (req, res) => {
+  const isAdmin = req.user.isAdmin;
+  console.log(isAdmin);
+  try {
+    if (isAdmin) {
+      const mediaId = req.params.id;
+      const media = await Media.findOne({ _id: mediaId });
+      if (!media) {
+        return res
+          .status(404)
+          .json({ error: "Media not found or not deleted" });
+      }
+
+      if (media.imageMedia) {
+        const imagePath = path.join(process.cwd(), "uploads", media.imageMedia);
+        if (fs.existsSync(imagePath)) {
+          fs.unlinkSync(imagePath);
+        }
+      }
+
+      await Media.findOneAndDelete({ _id: mediaId });
+
+      res.status(200).json({ message: "Media Deleted" });
+    } else {
+      res.status(401).send("Non autorisé");
+    }
+  } catch (error) {
+    console.error("Error deleting media:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const deleteCommentInMedia = async (req, res) => {
+  try {
+    const media = await Media.findById(req.params.media);
+    const comment = await Comment.findById(req.params.comment);
+
+    if (!media) {
+      return res.status(404).json({ error: "Media not found" });
+    }
+    if (!comment) {
+      return res.status(404).json({ error: "Comment not found" });
+    }
+
+    media.commentaire.pull(comment._id);
+    await media.save();
+
+    await Comment.findByIdAndDelete(comment._id);
+
+    res.status(200).json({ media, message: "Comment Deleted" });
+  } catch (error) {
+    console.error("Error deleting comment", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// export const addCommentinMedia = async (req, res) => {
+//   try {
+//     const media = await Media.findById({ _id: req.params.mediaId });
+//     const { commentaire, author } = req.body;
+//     if (!media) {
+//       return res.status(404).send("Error media not found");
+//     }
+//     let user = await User.findById(author);
+//     console.log(user);
+
+//     const comment = new Comment({
+//       commentaire: commentaire,
+//       author: user._id, // Stockez uniquement l'ID de l'auteur
+//       authorFirstName: user.firstname, // Stockez le prénom de l'auteur
+//     });
+
+//     await comment.save();
+//     media.commentaire.push(comment);
+//     await media.save();
+
+//     const updatedMedia = await Media.findById(media).populate("commentaire");
+
+//     res.status(200).json(updatedMedia);
+//   } catch (error) {
+//     res.status(500).json(error.message);
+//   }
+// };
+
+// export const deleteMedia = async (req, res) => {
+//   try {
+//     const media = await Media.findOneAndDelete({ _id: req.params.id });
+
+//     if (!media) {
+//       return res.status(404).json("Error media not found or not deleted");
+//     }
+
+//     // Supprimer l'image associée
+//     if (media.imageMedia) {
+//       const imagePath = path.join(process.cwd(), "uploads", media.imageMedia);
+//       if (fs.existsSync(imagePath)) {
+//         fs.unlinkSync(imagePath);
+//       }
+//     }
+
+//     // Supprimer le fichier PDF associé s'il existe
+//     if (media.pdfMedia) {
+//       const pdfPath = path.join(process.cwd(), "uploads", media.pdfMedia);
+//       if (fs.existsSync(pdfPath)) {
+//         fs.unlinkSync(pdfPath);
+//       }
+//     }
+
+//     res.status(200).json({ message: "Media and associated files deleted" });
+//   } catch (error) {
+//     console.error("Error deleting media:", error);
+//     res.status(500).json(error.message);
+//   }
+// };

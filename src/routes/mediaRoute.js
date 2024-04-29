@@ -13,24 +13,23 @@ import { uploadMedia } from "../middlewares/multer";
 
 const mediaRouter = Router();
 
-mediaRouter.get("/allmedia", getAllMedia);
-mediaRouter.get("/:id", getMediaById);
-
-
 mediaRouter.post(
   "/create-media",
   uploadMedia.single("imageMedia"),
- auth, createMedia
+  auth,
+  createMedia
 );
 
-mediaRouter.post("/:mediaId/comment",auth, addCommentinMedia);
 
-mediaRouter.put("/update-media/:id",auth, updateMedia);
+
+mediaRouter.get("/allmedia", getAllMedia);
+mediaRouter.get("/:id", getMediaById);
+mediaRouter.post("/:mediaId/comment", auth, addCommentinMedia);
+
+mediaRouter.put("/update-media/:id", auth, updateMedia);
 
 mediaRouter.delete("/:media/delete-comment/:comment", deleteCommentInMedia);
 
-mediaRouter.delete("/delete/:id", auth,deleteMedia);
+mediaRouter.delete("/delete/:id", auth, deleteMedia);
 
 export default mediaRouter;
-
-

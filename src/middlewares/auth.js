@@ -38,6 +38,9 @@ const generateAuthToken = (user) => {
   {userData}, process.env.JWT_SECRET, { expiresIn: "7d" }
   );
   return token;
+
+
+  
 };
 export { auth, generateAuthToken };
 

@@ -5,8 +5,7 @@ import userRouter from "./routes/userRoute";
 import decoratorRouter from "./routes/decoratorRoute";
 import mediaRouter from "./routes/mediaRoute";
 import commentRouter from "./routes/commentRouter";
-
-
+import projectRouter from "./routes/projectRouter";
 
 
 const app = express();
@@ -19,9 +18,6 @@ async function main() {
   console.log(`DATABASE MongoDB est connecté`);
 }
 
-// // j'utilise EJS comme moteur de rendu pour les views (les pages "inscription" "connexion")
-// app.set("view engine", "ejs");
-// app.use(express.static("public"));
 
 app.use(cors());
 app.use(express.urlencoded({ extended: false }));
@@ -34,14 +30,24 @@ app.use((req, res, next) => {
 app.get("/", (req, res) => res.json("YOU ARE IN INTERIOR BACKEND"));
 app.use("/users", userRouter);
 app.use("/decorators", decoratorRouter);
+app.use("/media", mediaRouter);
+app.use("/comment", commentRouter);
+app.use("/projects", projectRouter);
+
+
 
 
 
 app.use(express.static(process.cwd() + "/uploads"));
 
-app.use("/media", mediaRouter);
-app.use("/comment", commentRouter);
+
+
+
+
 
 app.listen(PORT, () =>
   console.log(`[SERVER] is running on http://localhost:${PORT}`)
 );
+
+
+
